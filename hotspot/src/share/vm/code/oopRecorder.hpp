@@ -89,7 +89,8 @@ template <class T> class ValueRecorder : public StackObj {
   bool is_complete() { return _complete; }
 #endif
 
- private:
+ //private:
+ public:
   // variant of find_index which does not allocate if not found (yields -1)
   int maybe_find_index(T h);
 
@@ -147,7 +148,8 @@ template <class T> class ValueRecorder : public StackObj {
 };
 
 class OopRecorder : public ResourceObj {
- private:
+ //private:
+ public:
   ValueRecorder<jobject>      _oops;
   ValueRecorder<Metadata*>    _metadata;
  public:

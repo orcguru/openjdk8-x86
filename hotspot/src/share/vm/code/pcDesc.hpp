@@ -34,7 +34,8 @@ class nmethod;
 
 class PcDesc VALUE_OBJ_CLASS_SPEC {
   friend class VMStructs;
- private:
+ //private:
+ public:
   int _pc_offset;           // offset from start of nmethod
   int _scope_decode_offset; // offset for scope in nmethod
   int _obj_decode_offset;
@@ -63,6 +64,9 @@ class PcDesc VALUE_OBJ_CLASS_SPEC {
   // Constructor (only used for static in nmethod.cpp)
   // Also used by ScopeDesc::sender()]
   PcDesc(int pc_offset, int scope_decode_offset, int obj_decode_offset);
+
+  // c2bubble
+  PcDesc();
 
   enum {
     // upper and lower exclusive limits real offsets:

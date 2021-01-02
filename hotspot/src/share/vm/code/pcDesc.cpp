@@ -38,6 +38,13 @@ PcDesc::PcDesc(int pc_offset, int scope_decode_offset, int obj_decode_offset) {
   _flags               = 0;
 }
 
+PcDesc::PcDesc() {
+  _pc_offset           = 0;
+  _scope_decode_offset = 0;
+  _obj_decode_offset   = 0;
+  _flags               = 0;
+}
+
 address PcDesc::real_pc(const nmethod* code) const {
   return code->code_begin() + pc_offset();
 }

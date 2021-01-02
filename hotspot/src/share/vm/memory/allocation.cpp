@@ -688,6 +688,7 @@ void* Arena::internal_malloc_4(size_t x) {
 //  Java_sun_security_ec_ECKeyPairGenerator_generateECKeyPair
 // define ALLOW_OPERATOR_NEW_USAGE for platform on which global operator new allowed.
 //
+#define ALLOW_OPERATOR_NEW_USAGE 1
 #ifndef ALLOW_OPERATOR_NEW_USAGE
 void* operator new(size_t size) throw() {
   assert(false, "Should not call global operator new");

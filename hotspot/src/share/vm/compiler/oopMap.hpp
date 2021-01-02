@@ -142,7 +142,8 @@ public:
 class OopMap: public ResourceObj {
   friend class OopMapStream;
   friend class VMStructs;
- private:
+ //private:
+ public:
   int  _pc_offset;
   int  _omv_count;
   int  _omv_data_size;
@@ -205,7 +206,8 @@ class OopMap: public ResourceObj {
 
 class OopMapSet : public ResourceObj {
   friend class VMStructs;
- private:
+ //private:
+ public:
   int _om_count;
   int _om_size;
   OopMap** _om_data;
@@ -263,7 +265,8 @@ class OopMapSet : public ResourceObj {
 
 
 class OopMapStream : public StackObj {
- private:
+ //private:
+ public:
   CompressedReadStream* _stream;
   int _mask;
   int _size;

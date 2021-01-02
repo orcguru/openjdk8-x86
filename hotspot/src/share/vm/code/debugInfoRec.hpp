@@ -143,7 +143,8 @@ class DebugInformationRecorder: public ResourceObj {
 
   bool recording_non_safepoints() { return _recording_non_safepoints; }
 
- private:
+ //private:
+ public:
   friend class ScopeDesc;
   friend class vframeStreamCommon;
   friend class DIR_Chunk;

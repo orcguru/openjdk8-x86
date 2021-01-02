@@ -61,7 +61,8 @@ class CodeBlob VALUE_OBJ_CLASS_SPEC {
 
   friend class VMStructs;
 
- private:
+ //private:
+ public:
   const char* _name;
   int        _size;                              // total size of CodeBlob in bytes
   int        _header_size;                       // size of header (depends on subclass)
@@ -79,7 +80,7 @@ class CodeBlob VALUE_OBJ_CLASS_SPEC {
 
  public:
   // Returns the space needed for CodeBlob
-  static unsigned int allocation_size(CodeBuffer* cb, int header_size);
+  static unsigned int allocation_size(CodeBuffer* cb, int header_size, int* size_breakdown = NULL);
   static unsigned int align_code_offset(int offset);
 
   // Creation

@@ -116,7 +116,8 @@ class nmethod : public CodeBlob {
   friend class VMStructs;
   friend class NMethodSweeper;
   friend class CodeCache;  // scavengable oops
- private:
+ //private:
+ public:
 
   // GC support to help figure out if an nmethod has been
   // cleaned/unloaded by the current GC.
@@ -293,7 +294,8 @@ class nmethod : public CodeBlob {
           ExceptionHandlerTable* handler_table,
           ImplicitExceptionTable* nul_chk_table,
           AbstractCompiler* compiler,
-          int comp_level);
+          int comp_level,
+          int* size_cb);
 
   // helper methods
   void* operator new(size_t size, int nmethod_size) throw();
@@ -329,7 +331,9 @@ class nmethod : public CodeBlob {
                               ExceptionHandlerTable* handler_table,
                               ImplicitExceptionTable* nul_chk_table,
                               AbstractCompiler* compiler,
-                              int comp_level);
+                              int comp_level,
+                              int* size_cb,
+                              int* size_breakdown);
 
   static nmethod* new_native_nmethod(methodHandle method,
                                      int compile_id,
@@ -521,7 +525,8 @@ class nmethod : public CodeBlob {
   void copy_values(GrowableArray<Metadata*>* metadata);
 
   // Relocation support
-private:
+//private:
+public:
   void fix_oop_relocations(address begin, address end, bool initialize_immediates);
   inline void initialize_immediate_oop(oop* dest, jobject handle);
 

@@ -94,9 +94,42 @@
 #ifdef TARGET_OS_FAMILY_bsd
 # include "os_bsd.inline.hpp"
 #endif
+#include <sys/stat.h>
+#include <unistd.h>
 
 static jint CurrentVersion = JNI_VERSION_1_8;
 
+char jit_bin_fn[256] = {0};
+char jit_log_fn[256] = {0};
+char jit_jvm_id[256] = {0};
+bool jit_log_on = false;
+FILE *jit_fd = NULL;
+
+#include <time.h>
+void jitlog(const char* fmt, ...)
+{
+  if (jit_log_on) {
+    va_list args;
+    char new_fmt[8192];
+    time_t t = time(NULL);
+    char *ts;
+    if (t != -1) {
+      ts = asctime(gmtime(&t));
+      ts[strlen(ts)-1] = ' ';
+      sprintf(&(new_fmt[0]), "%s   %s %s", ts, &(jit_jvm_id[0]), fmt);
+    } else {
+      sprintf(&(new_fmt[0]), "%s %s", &(jit_jvm_id[0]), fmt);
+    }
+    va_start(args, fmt);
+    FILE* fp = fopen(&(jit_log_fn[0]), "a");
+    if (fp != NULL) {
+      vfprintf(fp, new_fmt, args);
+      fflush(fp);
+      fclose(fp);
+    }
+    va_end(args);
+  }
+}
 
 // The DT_RETURN_MARK macros create a scoped object to fire the dtrace
 // '-return' probe regardless of the return path is taken out of the function.
@@ -5178,7 +5211,7 @@ DT_RETURN_MARK_DECL(CreateJavaVM, jint
                     , HOTSPOT_JNI_CREATEJAVAVM_RETURN(_ret_ref));
 #endif /* USDT2 */
 
-_JNI_IMPORT_OR_EXPORT_ jint JNICALL JNI_CreateJavaVM(JavaVM **vm, void **penv, void *args) {
+_JNI_IMPORT_OR_EXPORT_ jint JNICALL JNI_CreateJavaVM(JavaVM **vm, void **penv, void *args, int argc, char **argv, unsigned long argv_hash, char* argv_all) {
 #ifndef USDT2
   HS_DTRACE_PROBE3(hotspot_jni, CreateJavaVM__entry, vm, penv, args);
 #else /* USDT2 */
@@ -5236,6 +5269,29 @@ _JNI_IMPORT_OR_EXPORT_ jint JNICALL JNI_CreateJavaVM(JavaVM **vm, void **penv, v
    * JNI_CreateJavaVM will immediately fail using the above logic.
    */
   bool can_try_again = true;
+
+  // For jit_log
+  char *jh_ptr = NULL;
+  jh_ptr = getenv("JAVA_HOME");
+  if (jh_ptr != NULL) {
+    // log
+    sprintf(&(jit_log_fn[0]), "%s/jit_log", jh_ptr);
+    struct stat s;
+    if ((stat(&(jit_log_fn[0]), &s) == 0) && S_ISDIR(s.st_mode)) {
+      jit_log_on = true;
+      sprintf(&(jit_jvm_id[0]), "pid%d", getpid());
+      sprintf(&(jit_log_fn[0]), "%s/jit_log/%lu", jh_ptr, argv_hash);
+      jitlog("JVM: %s\n", argv_all);
+      chmod(&(jit_log_fn[0]), 0777);
+    }
+    // bin
+    sprintf(&(jit_bin_fn[0]), "%s/jit_bin", jh_ptr);
+    if ((stat(&(jit_bin_fn[0]), &s) == 0) && S_ISDIR(s.st_mode)) {
+      sprintf(&(jit_bin_fn[0]), "%s/jit_bin/%lu", jh_ptr, argv_hash);
+      jit_fd = fopen(&(jit_bin_fn[0]), "w");
+      assert(jit_fd != NULL, "fopen");
+    }
+  }
 
   result = Threads::create_vm((JavaVMInitArgs*) args, &can_try_again);
   if (result == JNI_OK) {

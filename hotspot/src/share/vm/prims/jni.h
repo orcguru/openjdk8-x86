@@ -1935,7 +1935,7 @@ _JNI_IMPORT_OR_EXPORT_ jint JNICALL
 JNI_GetDefaultJavaVMInitArgs(void *args);
 
 _JNI_IMPORT_OR_EXPORT_ jint JNICALL
-JNI_CreateJavaVM(JavaVM **pvm, void **penv, void *args);
+JNI_CreateJavaVM(JavaVM **pvm, void **penv, void *args, int argc, char **argv, unsigned long argv_hash, char* argv_all);
 
 _JNI_IMPORT_OR_EXPORT_ jint JNICALL
 JNI_GetCreatedJavaVMs(JavaVM **, jsize, jsize *);

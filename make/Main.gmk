@@ -67,6 +67,8 @@ default: jdk
 
 all: images docs
 	@$(call CheckIfMakeAtEnd)
+	mkdir -p $(OUTPUT_ROOT)/images/j2sdk-image/jit_log
+	mkdir -p $(OUTPUT_ROOT)/images/j2sdk-image/jit_bin
 
 # Setup a rule for SPEC file that fails if executed. This check makes sure the configuration
 # is up to date after changes to configure

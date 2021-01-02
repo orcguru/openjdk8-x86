@@ -54,7 +54,7 @@ class SharkCompiler : public AbstractCompiler {
   void initialize();
 
   // Compile a normal (bytecode) method and install it in the VM
-  void compile_method(ciEnv* env, ciMethod* target, int entry_bci);
+  void compile_method(ciEnv* env, ciMethod* target, int entry_bci, JITCode* jc = NULL);
 
   // Generate a wrapper for a native (JNI) method
   nmethod* generate_native_wrapper(MacroAssembler* masm,

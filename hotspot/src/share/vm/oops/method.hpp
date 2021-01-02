@@ -213,9 +213,15 @@ class Method : public Metadata {
   char* name_and_sig_as_C_string() const;
   char* name_and_sig_as_C_string(char* buf, int size) const;
 
+  char* name_and_sig_as_C_dotted_string() const;
+  char* name_and_sig_as_C_dotted_string(char* buf, int size) const;
+
   // Static routine in the situations we don't have a Method*
   static char* name_and_sig_as_C_string(Klass* klass, Symbol* method_name, Symbol* signature);
   static char* name_and_sig_as_C_string(Klass* klass, Symbol* method_name, Symbol* signature, char* buf, int size);
+
+  static char* name_and_sig_as_C_dotted_string(Klass* klass, Symbol* method_name, Symbol* signature);
+  static char* name_and_sig_as_C_dotted_string(Klass* klass, Symbol* method_name, Symbol* signature, char* buf, int size);
 
   Bytecodes::Code java_code_at(int bci) const {
     return Bytecodes::java_code_at(this, bcp_from(bci));

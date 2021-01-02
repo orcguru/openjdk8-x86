@@ -594,7 +594,9 @@ nmethod* nmethod::new_nmethod(methodHandle method,
   ExceptionHandlerTable* handler_table,
   ImplicitExceptionTable* nul_chk_table,
   AbstractCompiler* compiler,
-  int comp_level
+  int comp_level,
+  int* size_cb,
+  int* size_breakdown
 )
 {
   assert(debug_info->oop_recorder() == code_buffer->oop_recorder(), "shared OR");
@@ -602,13 +604,16 @@ nmethod* nmethod::new_nmethod(methodHandle method,
   // create nmethod
   nmethod* nm = NULL;
   { MutexLockerEx mu(CodeCache_lock, Mutex::_no_safepoint_check_flag);
+    size_cb[0] = allocation_size(code_buffer, sizeof(nmethod), size_breakdown);
+    size_cb[1] = debug_info->pcs_size();
+    size_cb[2] = debug_info->data_size();
     int nmethod_size =
-      allocation_size(code_buffer, sizeof(nmethod))
-      + adjust_pcs_size(debug_info->pcs_size())
+      size_cb[0]
+      + adjust_pcs_size(size_cb[1])
       + round_to(dependencies->size_in_bytes() , oopSize)
       + round_to(handler_table->size_in_bytes(), oopSize)
       + round_to(nul_chk_table->size_in_bytes(), oopSize)
-      + round_to(debug_info->data_size()       , oopSize);
+      + round_to(size_cb[2], oopSize);
 
     nm = new (nmethod_size)
     nmethod(method(), nmethod_size, compile_id, entry_bci, offsets,
@@ -617,7 +622,8 @@ nmethod* nmethod::new_nmethod(methodHandle method,
             handler_table,
             nul_chk_table,
             compiler,
-            comp_level);
+            comp_level,
+            size_cb);
 
     if (nm != NULL) {
       // To make dependency checking during class loading fast, record
@@ -651,7 +657,6 @@ nmethod* nmethod::new_nmethod(methodHandle method,
   }
   return nm;
 }
-
 
 // For native wrappers
 nmethod::nmethod(
@@ -847,7 +852,8 @@ nmethod::nmethod(
   ExceptionHandlerTable* handler_table,
   ImplicitExceptionTable* nul_chk_table,
   AbstractCompiler* compiler,
-  int comp_level
+  int comp_level,
+  int* size_cb
   )
   : CodeBlob("nmethod", code_buffer, sizeof(nmethod),
              nmethod_size, offsets->value(CodeOffsets::Frame_Complete), frame_size, oop_maps),
@@ -889,8 +895,10 @@ nmethod::nmethod(
     }
 
     _oops_offset             = data_offset();
-    _metadata_offset         = _oops_offset          + round_to(code_buffer->total_oop_size(), oopSize);
-    _scopes_data_offset      = _metadata_offset      + round_to(code_buffer->total_metadata_size(), wordSize);
+    size_cb[3] = code_buffer->total_oop_size();
+    _metadata_offset         = _oops_offset          + round_to(size_cb[3], oopSize);
+    size_cb[4] = code_buffer->total_metadata_size();
+    _scopes_data_offset      = _metadata_offset      + round_to(size_cb[4], wordSize);
 
     _scopes_pcs_offset       = _scopes_data_offset   + round_to(debug_info->data_size       (), oopSize);
     _dependencies_offset     = _scopes_pcs_offset    + adjust_pcs_size(debug_info->pcs_size());
@@ -936,7 +944,6 @@ nmethod::nmethod(
     print_nmethod(printnmethods);
   }
 }
-
 
 // Print a short set of xml attributes to identify this nmethod.  The
 // output should be embedded in some other element.

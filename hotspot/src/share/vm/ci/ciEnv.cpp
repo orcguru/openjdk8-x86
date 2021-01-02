@@ -62,6 +62,29 @@
 #include "opto/runtime.hpp"
 #endif
 
+extern void c2b_dump_jit_to_binary(ciMethod* cmethod,
+                                   methodHandle method,
+                                   int compile_id,              
+                                   int entry_bci,               
+                                   CodeOffsets* offsets,        
+                                   int orig_pc_offset,          
+                                   DebugInformationRecorder* debug_info,
+                                   Dependencies* dependencies,  
+                                   CodeBuffer* code_buffer, int frame_size,
+                                   OopMapSet* oop_maps,         
+                                   ExceptionHandlerTable* handler_table,
+                                   ImplicitExceptionTable* nul_chk_table,
+                                   AbstractCompiler* compiler,
+                                   int comp_level,
+                                   int* size_cb,
+                                   int* size_breakdown,
+                                   bool has_unsafe_access,
+                                   bool has_wide_vectors,
+                                   address insts_begin,
+                                   int insts_size);
+
+extern void c2b_nmethod_dump(nmethod* nm);
+
 // ciEnv
 //
 // This class is the top level broker for requests from the compiler
@@ -974,7 +997,8 @@ void ciEnv::register_method(ciMethod* target,
                             int comp_level,
                             bool has_unsafe_access,
                             bool has_wide_vectors,
-                            RTMState  rtm_state) {
+                            RTMState  rtm_state,
+                            bool dump_method) {
   VM_ENTRY_MARK;
   nmethod* nm = NULL;
   {
@@ -1041,6 +1065,8 @@ void ciEnv::register_method(ciMethod* target,
     assert(offsets->value(CodeOffsets::Deopt) != -1, "must have deopt entry");
     assert(offsets->value(CodeOffsets::Exceptions) != -1, "must have exception entry");
 
+    int size_info[5] = {0};
+    int size_breakdown[4] = {0};
     nm =  nmethod::new_nmethod(method,
                                compile_id(),
                                entry_bci,
@@ -1049,11 +1075,31 @@ void ciEnv::register_method(ciMethod* target,
                                debug_info(), dependencies(), code_buffer,
                                frame_words, oop_map_set,
                                handler_table, inc_table,
-                               compiler, comp_level);
+                               compiler, comp_level,
+                               &(size_info[0]),
+                               &(size_breakdown[0]));
+    if (dump_method) {
+      c2b_dump_jit_to_binary(target,
+                method,
+                compile_id(),
+                entry_bci,
+                offsets,
+                orig_pc_offset,
+                debug_info(), dependencies(), code_buffer,
+                frame_words, oop_map_set,
+                handler_table, inc_table,
+                compiler, comp_level,
+                &(size_info[0]), &(size_breakdown[0]), has_unsafe_access, has_wide_vectors,
+                nm->insts_begin(), (nm->_stub_offset-nm->_code_offset));
+    }
+
     // Free codeBlobs
     code_buffer->free_blob();
 
     if (nm != NULL) {
+      if (dump_method) {
+        c2b_nmethod_dump(nm);
+      }
       nm->set_has_unsafe_access(has_unsafe_access);
       nm->set_has_wide_vectors(has_wide_vectors);
 #if INCLUDE_RTM_OPT
@@ -1113,7 +1159,6 @@ void ciEnv::register_method(ciMethod* target,
     CompileBroker::handle_full_code_cache();
   }
 }
-
 
 // ------------------------------------------------------------------
 // ciEnv::find_system_klass

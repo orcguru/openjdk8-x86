@@ -53,7 +53,8 @@ class ciMethod : public ciMetadata {
   friend class ciMethodHandle;
   friend class ciReplay;
 
- private:
+ //private:
+ public:
   // General method information.
   ciFlags          _flags;
   ciSymbol*        _name;

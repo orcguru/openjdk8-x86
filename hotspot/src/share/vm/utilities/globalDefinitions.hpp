@@ -84,6 +84,8 @@
 //----------------------------------------------------------------------------------------------------
 // Constants
 
+extern void jitlog(const char* fmt, ...);
+
 const int LogBytesPerShort   = 1;
 const int LogBytesPerInt     = 2;
 #ifdef _LP64

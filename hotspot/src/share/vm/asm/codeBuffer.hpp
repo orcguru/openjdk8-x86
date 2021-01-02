@@ -54,7 +54,8 @@ public:
 
   enum { frame_never_safe = -1 };
 
-private:
+//private:
+public:
   int _values[max_Entries];
 
 public:
@@ -81,7 +82,8 @@ class CodeSection VALUE_OBJ_CLASS_SPEC {
  public:
   typedef int csize_t;  // code size type; would be size_t except for history
 
- private:
+ //private:
+ public:
   address     _start;           // first byte of contents (instructions)
   address     _mark;            // user mark, usually an instruction beginning
   address     _end;             // current end address
@@ -345,7 +347,8 @@ class CodeBuffer: public StackObj {
     SECT_LIMIT, SECT_NONE = -1
   };
 
- private:
+ //private:
+ public:
   enum {
     sect_bits = 2,      // assert (SECT_LIMIT <= (1<<sect_bits))
     sect_mask = (1<<sect_bits)-1

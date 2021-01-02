@@ -103,7 +103,7 @@ static jboolean ParseArguments(int *pargc, char ***pargv,
                                int *pmode, char **pwhat,
                                int *pret, const char *jrepath);
 static jboolean InitializeJVM(JavaVM **pvm, JNIEnv **penv,
-                              InvocationFunctions *ifn);
+                              InvocationFunctions *ifn, int argc, char **argv);
 static jstring NewPlatformString(JNIEnv *env, char *s);
 static jclass LoadMainClass(JNIEnv *env, int mode, char *name);
 static jclass GetApplicationClass(JNIEnv *env);
@@ -167,6 +167,8 @@ static jboolean IsWildCardEnabled();
 static jlong threadStackSize    = 0;  /* stack size of the new thread */
 static jlong maxHeapSize        = 0;  /* max heap size */
 static jlong initialHeapSize    = 0;  /* inital heap size */
+unsigned long argv_hash;
+char* argv_all = NULL;
 
 /*
  * Entry point.
@@ -373,7 +375,7 @@ JavaMain(void * _args)
 
     /* Initialize the virtual machine */
     start = CounterGet();
-    if (!InitializeJVM(&vm, &env, &ifn)) {
+    if (!InitializeJVM(&vm, &env, &ifn, argc, argv)) {
         JLI_ReportErrorMessage(JVM_ERROR1);
         exit(1);
     }
@@ -1092,8 +1094,39 @@ ParseArguments(int *pargc, char ***pargv,
     char **argv = *pargv;
     int mode = LM_UNKNOWN;
     char *arg;
+    int c;
+    int argv_total_sz = 0;
+    int argv_cnt = 0;
+    char* argv_all_tmp = NULL;
 
     *pret = 0;
+
+    argv_hash = 5381;
+    while ((arg = *argv) != 0) {
+        argv_total_sz += strlen(arg) + 1;
+        argv_cnt++;
+        while (c = *arg++) {
+            argv_hash = ((argv_hash << 5) + argv_hash) + c;
+        }
+        argv++;
+    }
+    argv = *pargv;
+    argv_all = (char*)malloc(argv_total_sz);
+    if (argv_all != NULL) {
+        int i = 0;
+        argv_all_tmp = argv_all;
+        while ((arg = *argv) != 0) {
+            sprintf(argv_all_tmp, "%s", arg);
+            argv_all_tmp += strlen(arg);
+            i++;
+            if (i < argv_cnt) {
+                sprintf(argv_all_tmp, " ");
+                argv_all_tmp++;
+            }
+            argv++;
+        }
+    }
+    argv = *pargv;
 
     while ((arg = *argv) != 0 && *arg == '-') {
         argv++; --argc;
@@ -1214,7 +1247,7 @@ ParseArguments(int *pargc, char ***pargv,
  * finished.
  */
 static jboolean
-InitializeJVM(JavaVM **pvm, JNIEnv **penv, InvocationFunctions *ifn)
+InitializeJVM(JavaVM **pvm, JNIEnv **penv, InvocationFunctions *ifn, int argc, char **argv)
 {
     JavaVMInitArgs args;
     jint r;
@@ -1237,7 +1270,7 @@ InitializeJVM(JavaVM **pvm, JNIEnv **penv, InvocationFunctions *ifn)
                    i, args.options[i].optionString);
     }
 
-    r = ifn->CreateJavaVM(pvm, (void **)penv, &args);
+    r = ifn->CreateJavaVM(pvm, (void **)penv, &args, argc, argv, argv_hash, argv_all);
     JLI_MemFree(options);
     return r == JNI_OK;
 }

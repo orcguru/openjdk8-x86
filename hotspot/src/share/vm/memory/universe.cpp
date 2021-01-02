@@ -423,7 +423,6 @@ void Universe::genesis(TRAPS) {
 
   // Initialize dependency array for null class loader
   ClassLoaderData::the_null_class_loader_data()->init_dependencies(CHECK);
-
 }
 
 // CDS support for patching vtables in metadata in the shared archive.

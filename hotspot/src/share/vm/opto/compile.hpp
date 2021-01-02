@@ -43,6 +43,7 @@
 #include "runtime/deoptimization.hpp"
 #include "runtime/vmThread.hpp"
 #include "utilities/ticks.hpp"
+#include "opto/c2bubble.hpp"
 
 class Block;
 class Bundle;
@@ -1050,6 +1051,9 @@ class Compile : public Phase {
           address stub_function, const char *stub_name,
           int is_fancy_jump, bool pass_tls,
           bool save_arg_registers, bool return_pc);
+
+  // Method transformed by c2bubble
+  Compile(ciEnv* ci_env, C2Compiler* compiler, ciMethod* target, JITCode* jc);
 
   // From the TypeFunc signature, generate code to pass arguments
   // from Compiled calling convention to Interpreter's calling convention

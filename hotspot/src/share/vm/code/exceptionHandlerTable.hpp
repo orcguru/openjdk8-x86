@@ -83,7 +83,8 @@ class HandlerTableEntry {
 
 class nmethod;
 class ExceptionHandlerTable VALUE_OBJ_CLASS_SPEC {
- private:
+ //private:
+ public:
   HandlerTableEntry* _table;    // the table
   int                _length;   // the current length of the table
   int                _size;     // the number of allocated entries
@@ -139,6 +140,7 @@ class ExceptionHandlerTable VALUE_OBJ_CLASS_SPEC {
 typedef  uint              implicit_null_entry;
 
 class ImplicitExceptionTable VALUE_OBJ_CLASS_SPEC {
+public:
   uint _size;
   uint _len;
   implicit_null_entry *_data;

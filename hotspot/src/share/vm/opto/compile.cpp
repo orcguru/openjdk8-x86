@@ -932,7 +932,8 @@ Compile::Compile( ciEnv* ci_env, C2Compiler* compiler, ciMethod* target, int osr
                            env()->comp_level(),
                            has_unsafe_access(),
                            SharedRuntime::is_wide_vector(max_vector_size()),
-                           rtm_state()
+                           rtm_state(),
+                           is_method_compilation() && !is_osr_compilation()
                            );
 
     if (log() != NULL) // Print code cache state into compiler log

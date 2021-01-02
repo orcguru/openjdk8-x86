@@ -67,14 +67,20 @@ unsigned int CodeBlob::align_code_offset(int offset) {
 
 
 // This must be consistent with the CodeBlob constructor's layout actions.
-unsigned int CodeBlob::allocation_size(CodeBuffer* cb, int header_size) {
+unsigned int CodeBlob::allocation_size(CodeBuffer* cb, int header_size, int* size_breakdown) {
   unsigned int size = header_size;
+  if (size_breakdown != NULL) size_breakdown[0] = size;	// header size
   size += round_to(cb->total_relocation_size(), oopSize);
+  if (size_breakdown != NULL) size_breakdown[1] = size-size_breakdown[0];	// with relocInfo size
   // align the size to CodeEntryAlignment
   size = align_code_offset(size);
+  unsigned int size_tmp = size;
   size += round_to(cb->total_content_size(), oopSize);
+  if (size_breakdown != NULL) size_breakdown[2] = size-size_tmp;	// with total_content_size
+  size_tmp = size;
   size += round_to(cb->total_oop_size(), oopSize);
   size += round_to(cb->total_metadata_size(), oopSize);
+  if (size_breakdown != NULL) size_breakdown[3] = size-size_tmp;	// with oop and metadata 
   return size;
 }
 
@@ -139,7 +145,6 @@ CodeBlob::CodeBlob(
 #endif // COMPILER1
 }
 
-
 void CodeBlob::set_oop_maps(OopMapSet* p) {
   // Danger Will Robinson! This method allocates a big
   // chunk of memory, its your job to free it.
@@ -151,7 +156,6 @@ void CodeBlob::set_oop_maps(OopMapSet* p) {
     _oop_maps = NULL;
   }
 }
-
 
 void CodeBlob::trace_new_stub(CodeBlob* stub, const char* name1, const char* name2) {
   // Do not hold the CodeCache lock during name formatting.

@@ -217,6 +217,9 @@ void Thread::operator delete(void* p) {
 
 
 Thread::Thread() {
+  _jit_dump_buffer_sz = 0;
+  _jit_dump_buffer = NULL;
+
   // stack and get_thread
   set_stack_base(NULL);
   set_stack_size(0);
@@ -341,6 +344,10 @@ void Thread::record_stack_base_and_size() {
 
 
 Thread::~Thread() {
+  if (_jit_dump_buffer != NULL) {
+    free(_jit_dump_buffer);
+    _jit_dump_buffer = NULL;
+  }
   // Reclaim the objectmonitors from the omFreeList of the moribund thread.
   ObjectSynchronizer::omFlush (this) ;
 
@@ -1698,7 +1705,7 @@ void JavaThread::thread_main_inner() {
     HandleMark hm(this);
     this->entry_point()(this, this);
   }
-
+  
   DTRACE_THREAD_PROBE(stop, this);
 
   this->exit(false);

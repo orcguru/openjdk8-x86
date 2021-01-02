@@ -56,6 +56,10 @@
 #include "jfr/support/jfrThreadExtension.hpp"
 #endif
 
+#undef min
+#undef max
+#include <map>
+
 class ThreadSafepointState;
 class ThreadProfiler;
 
@@ -102,6 +106,10 @@ class WorkerThread;
 
 class Thread: public ThreadShadow {
   friend class VMStructs;
+ public:
+  unsigned char* _jit_dump_buffer;
+  int _jit_dump_buffer_sz;
+
  private:
   // Exception handling
   // (Note: _pending_exception and friends are in ThreadShadow)

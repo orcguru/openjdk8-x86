@@ -266,7 +266,8 @@ class relocInfo VALUE_OBJ_CLASS_SPEC {
     type_mask               = 15  // A mask which selects only the above values
   };
 
- protected:
+ //protected:
+ public:
   unsigned short _value;
 
   enum RawBitsToken { RAW_BITS };
@@ -323,7 +324,8 @@ class relocInfo VALUE_OBJ_CLASS_SPEC {
   int  addr_offset()      const { assert(!is_prefix(), "must have offset");
                                   return (_value & offset_mask)*offset_unit; }
 
- protected:
+ //protected:
+ public:
   const short* data()     const { assert(is_datalen(), "must have data");
                                   return (const short*)(this + 1); }
   int          datalen()  const { assert(is_datalen(), "must have data");
@@ -339,7 +341,8 @@ class relocInfo VALUE_OBJ_CLASS_SPEC {
 
   void remove() { set_type(none); }
 
- protected:
+ //protected:
+ public:
   bool is_none()                const { return type() == none; }
   bool is_prefix()              const { return type() == data_prefix_tag; }
   bool is_datalen()             const { assert(is_prefix(), "must be prefix");
